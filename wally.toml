@@ -1,0 +1,9 @@
+[package]
+name = "rohi0086/your-project-name"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]
+profileservice = "brittonfischer/profileservice@2.1.5"
+goodsignal = "ddust1n/goodsignal@0.3.2"
