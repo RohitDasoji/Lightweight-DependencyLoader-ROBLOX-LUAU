@@ -13,6 +13,6 @@ version = "0.3.2"
 dependencies = []
 
 [[package]]
-name = "rohi0086/plantsversuszombieslobby"
+name = "rohi0086/your-project-name"
 version = "0.1.0"
 dependencies = [["goodsignal", "ddust1n/goodsignal@0.3.2"], ["profileservice", "brittonfischer/profileservice@2.1.5"]]
