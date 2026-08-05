@@ -9,7 +9,11 @@
       },
       "Packages": {
         "$path": "Packages"
+      },
+      "Assets": {
+        "$path": "src/assets"
       }
+
     },
 
     "ServerScriptService": {
@@ -20,6 +24,7 @@
 
     "StarterPlayer": {
       "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
         "Client": {
           "$path": "src/client"
         }
