@@ -9,6 +9,28 @@ export type LoaderOptions = {
 	Initialized: { [string]: boolean },
 	Created: { [string]: boolean },
 }
+export type HeartbeatKey = string | Player | number
+
+export type HeartbeatEntry = {
+	Class: any,
+	Key: HeartbeatKey?,
+}
+
+local Connections: { [string]: RBXScriptConnection? } = {
+	Heartbeat = nil,
+	Stepped = nil,
+	RenderStepped = nil,
+	PreRender = nil,
+}
+
+local Containers: { [string]: { HeartbeatEntry } } = {
+	Heartbeat = {},
+	Stepped = {},
+	RenderStepped = {},
+	PreRender = {},
+}
+
+
 
 
 export type dependency = string | ModuleScript
@@ -70,55 +92,54 @@ function ModuleLoader.LoadModules(
 	return true
 end
 
-function ModuleLoader.Heartbeat(Services)
-	local SortedContainer = {}
-	
-	for name, Class in pairs(Services) do
-		if typeof(Class.Update) == "function" or typeof(Class.update) == "function" then
-			table.insert(SortedContainer, Class)
+local function Register(EventName: string, RunServiceEvent: RBXScriptSignal, Services, Key: HeartbeatKey?)
+	local Container = Containers[EventName]
+
+	for _, Class in pairs(Services) do
+		local UpdateFn = Class.Update or Class.update
+		if typeof(UpdateFn) == "function" then
+			table.insert(Container, { Class = Class, Key = Key })
 		end
 	end
-	
-	Rs.Heartbeat:Connect(function(DeltaTime)
-		for _, Class in ipairs(SortedContainer) do
-			if typeof(Class.Update) == "function" then
-				Class.Update(DeltaTime)
-			elseif typeof(Class.update) == "function" then
-				Class.update(DeltaTime)
+
+	if not Connections[EventName] then
+		Connections[EventName] = RunServiceEvent:Connect(function(...)
+			for _, Entry in ipairs(Container) do
+				local UpdateFn = Entry.Class[EventName] or Entry.Class[EventName:lower()]
+				if typeof(UpdateFn) == "function" then
+					UpdateFn(...)
+				end
 			end
-		end
-	end)
-	
+		end)
+	end
 end
 
-function ModuleLoader.RenderStepped(Services)
-	
-	if Rs:IsServer() then
-		warn("RenderStepped ran on the server, this can only be run on the client")
-		return false
-	end
-	
-	
-	local SortedContainer = {}
+function ModuleLoader.Heartbeat(Services, Key: HeartbeatKey?)
+	Register("Heartbeat", Rs.Heartbeat, Services, Key)
+end
 
-	for name, Class in pairs(Services) do
-		if typeof(Class.Update) == "function" or typeof(Class.update) then
-			table.insert(SortedContainer, Class)
-		end
-	end
+function ModuleLoader.Stepped(Services, Key: HeartbeatKey?)
+	Register("Stepped", Rs.Stepped, Services, Key)
+end
 
-	Rs.RenderStepped:Connect(function(DeltaTime)
-		for _, Class in ipairs(SortedContainer) do
-			if typeof(Class.Update) == "function" then
-				Class.Update(DeltaTime)
-			elseif typeof(Class.update) == "function" then
-				Class.update(DeltaTime)
+function ModuleLoader.RenderStepped(Services, Key: HeartbeatKey?)
+	Register("RenderStepped", Rs.RenderStepped, Services, Key)
+end
+
+function ModuleLoader.PreRender(Services, Key: HeartbeatKey?)
+	Register("PreRender", Rs.PreRender, Services, Key)
+end
+
+function ModuleLoader.Remove(Key: HeartbeatKey)
+	for _, Container in pairs(Containers) do
+		for i = #Container, 1, -1 do
+			if Container[i].Key == Key then
+				table.remove(Container, i)
 			end
 		end
-	end)
-	
-	return true
+	end
 end
+
 
 function ModuleLoader.RequireServices(Container, FolderOfModules: Folder)
 	local Modules = FolderOfModules:GetChildren()
@@ -408,4 +429,6 @@ ModuleLoader.Load = function(ContextTable: ContextTable, RequiredModules: {[stri
 	return ContainerOfModules, Succ
 end
 
+
 return ModuleLoader
+
