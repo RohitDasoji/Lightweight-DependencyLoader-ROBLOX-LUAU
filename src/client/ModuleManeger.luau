@@ -1,5 +1,6 @@
 --!strict
 local Players = game:GetService("Players")
+local ModuleLoader = require(script.Parent.ModuleLoader)
 
 
 type service = {}
@@ -7,6 +8,7 @@ type service = {}
 
 
 local InitModules = {}
+local activeclasses = {}
 InitModules.__index = InitModules
 
 
@@ -29,11 +31,13 @@ end
 
 function InitModules.new()
     local self = setmetatable({}, InitModules)
+    self.Id = 12238498234
     self.guiServices = {}
     self.services = {}
     self.plr = Players.LocalPlayer
     self.Connections = {}
     self.Initialized = false
+    activeclasses[self.Id] = self
 
 
     return self
@@ -48,11 +52,23 @@ type cls = Objects & {
 
 function InitModules.Init(self: cls)
     if self.Initialized then
-        return
+        return true
     end
 
     self.Initialized = true
+    local succ = ModuleLoader.LoadPlayer(self)
+    
+    if not succ then
+        return false
+    end
 
+    local succ2 = ModuleLoader.LoadGui(self)
+
+    if not succ2 then
+        return false
+    end
+
+    return true
 end
 
 function InitModules.GetGuiService(self: cls,Servicename)
@@ -74,6 +90,16 @@ function InitModules.GetService(self: cls, Servicename)
     end
 
     return service
+end
+
+function InitModules.Remove(self: cls)
+    for _, Connection in ipairs(self.Connections) do
+        if typeof(Connection) == "RBXScriptConnection" then
+            Connection:Disconnect()
+            Connection = nil
+        end
+    end
+    activeclasses[self.Id] = nil
 end
 
 
