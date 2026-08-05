@@ -182,6 +182,7 @@ function ModuleLoader.RequireServices(Container, FolderOfModules: Folder)
 end
 
 function ModuleLoader.SetOrder(LoaderOptions: LoaderOptions, ModuleName: string, Modulescripts: requiredmodules)
+	print("Setting order")
 	if LoaderOptions.Ordered[ModuleName] then
 		return
 	end
@@ -226,12 +227,9 @@ function ModuleLoader.SetOrder(LoaderOptions: LoaderOptions, ModuleName: string,
 	table.insert(LoaderOptions.Order, ModuleName)
 end
 
-function ModuleLoader.CreateClasses(
-	ContextTable: ContextTable,
-	LoaderOptions: LoaderOptions,
-	RequiredModules: requiredmodules,
-	Container: Classmodules
-)
+function ModuleLoader.CreateClasses(ContextTable: ContextTable,LoaderOptions: LoaderOptions,RequiredModules: requiredmodules,Container: Classmodules)
+	print("Creating classes")
+
 	local retries = 3
 	local success = true
 
@@ -312,11 +310,8 @@ function ModuleLoader.CreateClasses(
 	return success
 end
 
-function ModuleLoader.InitializeModules(
-	LoaderOptions: LoaderOptions,
-	RequiredModules: requiredmodules,
-	Container: Classmodules
-)
+function ModuleLoader.InitializeModules(LoaderOptions: LoaderOptions,RequiredModules: requiredmodules,Container: Classmodules)
+	print("Initializing")
 	local amountofretries = 3
 	local success = true
 	if not Container then
@@ -410,6 +405,7 @@ end
 
 
 ModuleLoader.Require = function(folder: Folder)
+	print("Requirireing from require function in replicated storage")
 	local Container = {}
 	local Require = ModuleLoader.RequireServices(Container, folder)
 
@@ -422,6 +418,7 @@ ModuleLoader.Require = function(folder: Folder)
 end
 
 ModuleLoader.Load = function(ContextTable: ContextTable, RequiredModules: {[string]: any})
+	print("Loading From Loadfunction in replicatedstorage")
 
 	local ContainerOfModules: Classmodules = {}
 	local Succ = ModuleLoader.LoadModules(ContextTable, RequiredModules, ContainerOfModules)

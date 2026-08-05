@@ -9,13 +9,14 @@ ModuleLoader.LoadServer = function(ContextTable): Container | boolean | { [strin
 	local ServerFolder: Folder = Server.Services.ServerServices
 	local PlayerFolder: Folder = Server.Services.Services
 
+	print("Requiring server and player scripts")
 	local RequiredServer = Loader.Require(ServerFolder)
 	local RequiredPlayer = Loader.Require(PlayerFolder)
 
 	if not RequiredPlayer or not RequiredServer then
 		return false, false
 	end
-
+	print("Loading server")
 	local Container, succ = Loader.Load(ContextTable, RequiredServer)
 
 	if not succ then
@@ -32,6 +33,7 @@ ModuleLoader.LoadServer = function(ContextTable): Container | boolean | { [strin
 end
 
 ModuleLoader.LoadPlayer = function(ContextTable, RequiredPlayer): Container | boolean
+	print("Loading Player Services")
 	local Container, succ = Loader.Load(ContextTable, RequiredPlayer)
 
 	if not succ then
