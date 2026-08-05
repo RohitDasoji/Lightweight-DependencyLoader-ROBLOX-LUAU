@@ -113,6 +113,10 @@ function RuntimeModule:AddPlayer(plr: Player): boolean
 		return false
 	end
 
+	-- Loaded is the Container of live module instances returned by LoadPlayer.
+	-- This was never being stored, so PlayerData.Modules (and GetModule) stayed empty.
+	PlayerData.Modules = Loaded
+
 	return true
 end
 

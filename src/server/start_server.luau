@@ -6,16 +6,23 @@ local RETRYDELAY = 1
 local ServerStarted = false
 
 for i = 1, SERVERMAXRETRYAMT do
-	local succ, err = pcall(function()
-		InitModule:InitServer()
+	local succ, result = pcall(function()
+		return InitModule:InitServer()
 	end)
 
-	if succ then
+	-- succ only tells us whether an error was thrown. InitServer() can also
+	-- fail "quietly" by warning and returning false, so both have to be checked.
+	if succ and result then
 		ServerStarted = true
 		break
 	end
 
-	warn("Error With Server.init, Retrying" .. i .. "/" .. SERVERMAXRETRYAMT .. tostring(err))
+	if succ then
+		warn("InitServer() returned false, Retrying " .. i .. "/" .. SERVERMAXRETRYAMT)
+	else
+		warn("Error With Server.init, Retrying " .. i .. "/" .. SERVERMAXRETRYAMT .. " " .. tostring(result))
+	end
+
 	task.wait(RETRYDELAY)
 end
 
