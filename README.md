@@ -1,6 +1,4 @@
 # Lightweight-DependencyLoader-ROBLOX-LUAU
-Note: This Version could be unfinished and client services have not been tested so as the Loader itself please wait for it to be tested
-
 ## ModuleLoader
 
 A lightweight, dependency-aware module loader for Roblox (Luau). It requires your service/controller ModuleScripts, resolves load order based on declared dependencies, instantiates them, and initializes them — with automatic retries and fail-fast behavior if a core module can't come up.
@@ -102,6 +100,113 @@ These are intentional, not bugs:
 | `ModuleLoader.SetOrder(LoaderOptions, ModuleName, Modulescripts)` | Recursively resolves topological order for a single module. |
 | `ModuleLoader.CreateClasses(ContextTable, LoaderOptions, RequiredModules, Container)` | Instantiates modules in order via `.new()`. |
 | `ModuleLoader.InitializeModules(LoaderOptions, RequiredModules, Container)` | Calls `:Init()` on created modules in order. |
+| `ModuleLoader.Heartbeat(Services, Key?)` | **Optional.** Connects `RunService.Heartbeat` and calls `Heartbeat`/`heartbeat` (`DeltaTime`) on every module in `Services` that has one. Must be called manually, outside of `Load`. |
+| `ModuleLoader.Stepped(Services, Key?)` | **Optional.** Connects `RunService.Stepped` and calls `Stepped`/`stepped` (`Time`, `DeltaTime`) on every module in `Services` that has one. Fires before physics simulation. Must be called manually, outside of `Load`. |
+| `ModuleLoader.RenderStepped(Services, Key?)` | **Optional, client-only.** Connects `RunService.RenderStepped` and calls `RenderStepped`/`renderstepped` (`DeltaTime`) on every module in `Services` that has one. Must be called manually, outside of `Load`. |
+| `ModuleLoader.PreRender(Services, Key?)` | **Optional, client-only.** Connects `RunService.PreRender` and calls `PreRender`/`prerender` (`DeltaTime`) on every module in `Services` that has one. Must be called manually, outside of `Load`. |
+| `ModuleLoader.Remove(Key)` | Removes every entry tagged with `Key` from all four event containers. Call this from `PlayerRemoving` (or your equivalent per-key teardown) to stop calling into modules that no longer exist. |
+
+## Optional: per-frame updates (`Heartbeat` / `Stepped` / `RenderStepped` / `PreRender`)
+
+`ModuleLoader.Heartbeat`, `ModuleLoader.Stepped`, `ModuleLoader.RenderStepped`, and `ModuleLoader.PreRender` are **completely optional** — the loader works fine without them, and `Load`/`LoadModules` never call these automatically. If you want a module to run logic every frame, you have to opt in explicitly, after loading:
+
+```luau
+local Container, success = ModuleLoader.Load(ContextTable, RequiredModules)
+if not success then
+    return
+end
+
+ModuleLoader.Heartbeat(Container) -- server/client: runs every physics step, after simulation
+ModuleLoader.Stepped(Container) -- server/client: runs every physics step, before simulation
+-- or, client-side:
+ModuleLoader.RenderStepped(Container) -- runs every rendered frame, after camera update
+ModuleLoader.PreRender(Container) -- runs every rendered frame, before camera update
+```
+
+**Important:** none of these are part of the `Load`/`LoadModules` pipeline — you must call `ModuleLoader.Heartbeat(Container)`, `ModuleLoader.Stepped(Container)`, `ModuleLoader.RenderStepped(Container)`, and/or `ModuleLoader.PreRender(Container)` yourself, after `Load` succeeds, passing it the `Container` you got back. A module can be registered to more than one event at once if it needs to run logic on multiple ticks.
+
+### Each event calls its own matching method name — not a shared `Update`
+
+Each of the four functions above looks for a method on the module **named after that specific event** (in either casing), not a generic `Update`. This is deliberate: if a single module were registered to both `Heartbeat` and `RenderStepped` and both looked for the same `Update` method, there'd be no way for the module to tell which event actually fired, or to run different logic per event.
+
+So define exactly the method(s) matching whichever event(s) you register the module for:
+
+```luau
+-- ExampleService.lua
+local ExampleService = {}
+ExampleService.__index = ExampleService
+
+function ExampleService.new(ContextTable)
+    local self = setmetatable({}, ExampleService)
+    return self
+end
+
+function ExampleService.Heartbeat(DeltaTime)
+    -- only runs if this module was registered via ModuleLoader.Heartbeat(...)
+end
+
+function ExampleService.RenderStepped(DeltaTime)
+    -- only runs if this module was registered via ModuleLoader.RenderStepped(...)
+    -- can coexist with Heartbeat above without colliding
+end
+
+return ExampleService
+```
+
+Method names, matched per event (either casing works for each):
+
+| Event | Method names checked |
+|---|---|
+| `Heartbeat` | `Heartbeat` or `heartbeat` |
+| `Stepped` | `Stepped` or `stepped` |
+| `RenderStepped` | `RenderStepped` or `renderstepped` |
+| `PreRender` | `PreRender` or `prerender` |
+
+As with `Update` before, these must be plain functions on the module itself, not methods called through `:` (define as `function Class.Heartbeat(DeltaTime)`, not `function Class:Heartbeat(DeltaTime)`).
+
+Modules with no matching method for a given event are simply skipped for that event — nothing breaks, they're just not included in that event's per-frame loop. `Heartbeat` and `Stepped` fire on both server and client; `RenderStepped` and `PreRender` only fire on the client, so only register those from client-side code.
+
+### The `Key` parameter and `ModuleLoader.Remove`
+
+Every registration function takes an optional second argument, `Key: string | Player | number`, used to tag the modules you're registering so they can be removed later:
+
+```luau
+ModuleLoader.Heartbeat(PlayerContainer, player) -- tag every module in this call with `player`
+
+Players.PlayerRemoving:Connect(function(leavingPlayer)
+    ModuleLoader.Remove(leavingPlayer) -- untags and removes every entry registered with this key, across all four events
+end)
+```
+
+Leave `Key` as `nil` for anything that should live for the server's entire lifetime (e.g. server-only services loaded once at startup) — untagged entries are never touched by `Remove`. This is what makes it safe to call `ModuleLoader.Heartbeat(...)` once per player join without leaking connections or growing the per-frame loop forever: each call only ever creates the underlying `RunService` connection once per event (subsequent calls just append into the existing loop), and `Remove(Key)` is how you clean up a specific player's (or any other keyed owner's) entries when they're no longer needed.
+
+### Getting autocomplete for `Heartbeat` / `Stepped` / `RenderStepped` / `PreRender`
+
+If the lowercase aliases (`heartbeat`, `stepped`, `renderstepped`, `prerender`) are assigned dynamically (e.g. via a loop or metatable) rather than as explicit fields, Luau's static analysis won't be able to infer them, and they won't show up in autocomplete. To fix that, declare an explicit type for the module and cast the return value to it at the bottom of `ModuleLoader.luau`:
+
+```luau
+export type ModuleLoaderType = {
+    Require: (folder: Folder) -> (requiredmodules | boolean),
+    Load: (ContextTable: ContextTable, RequiredModules: { [string]: any }) -> (Classmodules, boolean),
+
+    Heartbeat: (Container: Classmodules) -> (),
+    heartbeat: (Container: Classmodules) -> (),
+
+    Stepped: (Container: Classmodules) -> (),
+    stepped: (Container: Classmodules) -> (),
+
+    RenderStepped: (Container: Classmodules) -> (),
+    renderstepped: (Container: Classmodules) -> (),
+
+    PreRender: (Container: Classmodules) -> (),
+    prerender: (Container: Classmodules) -> (),
+}
+
+-- at the very bottom of the file:
+return ModuleLoader :: ModuleLoaderType
+```
+
+This gives you autocomplete and hover documentation for all eight variants (both casings of all four events) in Roblox Studio's script editor and in VS Code via the Luau LSP extension, regardless of how the aliases are actually implemented internally.
 
 ## Third-party dependencies
 
