@@ -16,13 +16,11 @@ RuntimeModule.ServerData = {
 	Remotes = {
 		"Restock",
 		"Buy",
-		"CurrencyUpdate"
+		"CurrencyUpdate",
 	},
 
 	IsModulesLoaded = false,
 }
-
-
 
 function RuntimeModule:InitServer()
 	for _, RemoteString in ipairs(self.ServerData.Remotes) do
@@ -34,7 +32,7 @@ function RuntimeModule:InitServer()
 	if not Container or not PlayerModules then
 		warn("Server Services failed to initalize")
 		return false
-	end	
+	end
 
 	self.ServerData.IsModulesLoaded = true
 	return true
@@ -78,7 +76,7 @@ function RuntimeModule:AddPlayer(plr: Player): boolean
 	if PlayerData.Data == nil then
 		return false
 	end
-	
+
 	PlayerData.GetData = function()
 		if not PlayerData.DataLoaded then
 			warn("Data Has not Been Loaded Could Not execute function .getdata")
