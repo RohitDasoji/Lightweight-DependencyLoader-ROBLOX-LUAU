@@ -12,7 +12,7 @@ end
 type Objects = typeof(fill.new({}))
 
 type class = Objects & {
-    Init: (self: class) -> boolean
+	Init: (self: class) -> boolean,
 }
 
 function fill.Init(self: class): boolean
@@ -24,3 +24,4 @@ function fill.Init(self: class): boolean
 
 	return true
 end
+return fill
