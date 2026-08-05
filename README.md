@@ -1,4 +1,5 @@
 # Lightweight-DependencyLoader-ROBLOX-LUAU
+Other scripts related to the dependency loader inside Lightweight-DependencyLoader-ROBLOX-LUAU/src can be unstable. Recommended just to use the Moduleloader itself
 ## ModuleLoader
 
 A lightweight, dependency-aware module loader for Roblox (Luau). It requires your service/controller ModuleScripts, resolves load order based on declared dependencies, instantiates them, and initializes them — with automatic retries and fail-fast behavior if a core module can't come up.
