@@ -20,7 +20,7 @@ function fill.Init(self: class): boolean
 		return false
 	end
 
-	print("Initialized Player")
+	print("Initialized PlayerServices")
     
 	return true
 end

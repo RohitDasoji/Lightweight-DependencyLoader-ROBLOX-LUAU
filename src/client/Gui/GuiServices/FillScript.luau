@@ -20,5 +20,7 @@ function fill.Init(self: class): boolean
 		return false
 	end
 
+	print("Initialized GuiServices")
+
 	return true
 end

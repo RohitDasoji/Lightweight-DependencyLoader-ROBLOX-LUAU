@@ -20,5 +20,6 @@ function fill.Init(self: class): boolean
 		return false
 	end
 
+	print("Initialized Services")
 	return true
 end
