@@ -48,4 +48,5 @@ ModuleLoader.LoadPlayer = function(ContextTable): { [string]: any } | boolean
 
 	return Container
 end
+
 return ModuleLoader

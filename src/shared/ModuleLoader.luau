@@ -50,18 +50,6 @@ export type Module = {
 
 export type requiredmodules = { [string]: Module }
 
-local function PrintTable(t, indent)
-	indent = indent or ""
-	for key, value in pairs(t) do
-		if type(value) == "table" then
-			print(indent .. tostring(key) .. ":")
-			PrintTable(value, indent .. "  ")
-		else
-			print(indent .. tostring(key) .. " = " .. tostring(value))
-		end
-	end
-end
-
 function ModuleLoader.LoadModules(
 	ContextTable: ContextTable,
 	RequiredModules: requiredmodules,
@@ -240,7 +228,6 @@ function ModuleLoader.CreateClasses(
 	RequiredModules: requiredmodules,
 	Container: Classmodules
 )
-
 	local retries = 3
 	local success = true
 
@@ -326,9 +313,6 @@ function ModuleLoader.InitializeModules(
 	RequiredModules: requiredmodules,
 	Container: Classmodules
 )
-	PrintTable(RequiredModules)
-	PrintTable(Container)
-
 	local amountofretries = 3
 	local success = true
 	if not Container then
@@ -437,7 +421,6 @@ ModuleLoader.Require = function(folder: Folder)
 end
 
 ModuleLoader.Load = function(ContextTable: ContextTable, RequiredModules: { [string]: any })
-
 	local ContainerOfModules: Classmodules = {}
 	local Succ = ModuleLoader.LoadModules(ContextTable, RequiredModules, ContainerOfModules)
 
