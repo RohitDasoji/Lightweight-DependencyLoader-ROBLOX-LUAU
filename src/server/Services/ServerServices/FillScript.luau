@@ -4,7 +4,7 @@ local fill = {}
 fill.__index = fill
 
 function fill.new(ContextTable)
-	local self = {}
+	local self = setmetatable({}, fill)
 	self.ContextTable = ContextTable
 	self.Initialized = false
 	return self
@@ -24,4 +24,5 @@ function fill.Init(self: class): boolean
 
 	return true
 end
+
 return fill

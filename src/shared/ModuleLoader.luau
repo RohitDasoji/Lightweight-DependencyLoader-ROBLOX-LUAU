@@ -30,9 +30,6 @@ local Containers: { [string]: { HeartbeatEntry } } = {
 	PreRender = {},
 }
 
-
-
-
 export type dependency = string | ModuleScript
 
 export type dependencies = { dependency }
@@ -52,6 +49,18 @@ export type Module = {
 }
 
 export type requiredmodules = { [string]: Module }
+
+local function PrintTable(t, indent)
+	indent = indent or ""
+	for key, value in pairs(t) do
+		if type(value) == "table" then
+			print(indent .. tostring(key) .. ":")
+			PrintTable(value, indent .. "  ")
+		else
+			print(indent .. tostring(key) .. " = " .. tostring(value))
+		end
+	end
+end
 
 function ModuleLoader.LoadModules(
 	ContextTable: ContextTable,
@@ -140,7 +149,6 @@ function ModuleLoader.Remove(Key: HeartbeatKey)
 	end
 end
 
-
 function ModuleLoader.RequireServices(Container, FolderOfModules: Folder)
 	local Modules = FolderOfModules:GetChildren()
 	local success = true
@@ -182,7 +190,6 @@ function ModuleLoader.RequireServices(Container, FolderOfModules: Folder)
 end
 
 function ModuleLoader.SetOrder(LoaderOptions: LoaderOptions, ModuleName: string, Modulescripts: requiredmodules)
-	print("Setting order")
 	if LoaderOptions.Ordered[ModuleName] then
 		return
 	end
@@ -227,8 +234,12 @@ function ModuleLoader.SetOrder(LoaderOptions: LoaderOptions, ModuleName: string,
 	table.insert(LoaderOptions.Order, ModuleName)
 end
 
-function ModuleLoader.CreateClasses(ContextTable: ContextTable,LoaderOptions: LoaderOptions,RequiredModules: requiredmodules,Container: Classmodules)
-	print("Creating classes")
+function ModuleLoader.CreateClasses(
+	ContextTable: ContextTable,
+	LoaderOptions: LoaderOptions,
+	RequiredModules: requiredmodules,
+	Container: Classmodules
+)
 
 	local retries = 3
 	local success = true
@@ -310,8 +321,14 @@ function ModuleLoader.CreateClasses(ContextTable: ContextTable,LoaderOptions: Lo
 	return success
 end
 
-function ModuleLoader.InitializeModules(LoaderOptions: LoaderOptions,RequiredModules: requiredmodules,Container: Classmodules)
-	print("Initializing")
+function ModuleLoader.InitializeModules(
+	LoaderOptions: LoaderOptions,
+	RequiredModules: requiredmodules,
+	Container: Classmodules
+)
+	PrintTable(RequiredModules)
+	PrintTable(Container)
+
 	local amountofretries = 3
 	local success = true
 	if not Container then
@@ -363,6 +380,10 @@ function ModuleLoader.InitializeModules(LoaderOptions: LoaderOptions,RequiredMod
 			end
 		end
 
+		if type(Module.Init) == "function" then
+			print("Has init")
+		end
+
 		if type(Module) == "table" and type(Module.Init) == "function" then
 			local initialized = false
 			for i = 1, amountofretries do
@@ -403,9 +424,7 @@ function ModuleLoader.InitializeModules(LoaderOptions: LoaderOptions,RequiredMod
 	return success
 end
 
-
 ModuleLoader.Require = function(folder: Folder)
-	print("Requirireing from require function in replicated storage")
 	local Container = {}
 	local Require = ModuleLoader.RequireServices(Container, folder)
 
@@ -417,8 +436,7 @@ ModuleLoader.Require = function(folder: Folder)
 	return Container
 end
 
-ModuleLoader.Load = function(ContextTable: ContextTable, RequiredModules: {[string]: any})
-	print("Loading From Loadfunction in replicatedstorage")
+ModuleLoader.Load = function(ContextTable: ContextTable, RequiredModules: { [string]: any })
 
 	local ContainerOfModules: Classmodules = {}
 	local Succ = ModuleLoader.LoadModules(ContextTable, RequiredModules, ContainerOfModules)
@@ -426,6 +444,4 @@ ModuleLoader.Load = function(ContextTable: ContextTable, RequiredModules: {[stri
 	return ContainerOfModules, Succ
 end
 
-
 return ModuleLoader
-
