@@ -1,0 +1,2 @@
+--Remotes will be inside this folder src/shared/Remotes
+--Delete me and remember not to delte the folder though
