@@ -22,9 +22,9 @@ end
 local function resolvePlayerFolder()
 	local root = script.Parent
 	if root then
-		local clientFolder = root:FindFirstChild("client")
+		local clientFolder = root:FindFirstChild("Client")
 		if clientFolder then
-			local services = clientFolder:FindFirstChild("services")
+			local services = clientFolder:FindFirstChild("Services")
 			if services then
 				return services
 			end
@@ -69,7 +69,7 @@ ModuleLoader.LoadGui = function(ContextTable): { [string]: any } | boolean
 		return false
 	end
 
-	print("Succesfully loaded player")
+	print("succ loaded gui")
 	return Container
 end
 
@@ -96,7 +96,7 @@ ModuleLoader.LoadPlayer = function(ContextTable): { [string]: any } | boolean
 		warn("Returned value is not = to a table inside playerservices LOCALSCRIPT")
 		return false
 	end
-	print("Succesfull loaded gui")
+	print("Succesfull loaded plr")
 	return Container
 end
 

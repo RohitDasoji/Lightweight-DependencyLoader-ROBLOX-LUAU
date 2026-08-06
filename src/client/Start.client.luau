@@ -1,31 +1,17 @@
-local Players = game:GetService("Players")
 local ModuleManeger = require(script.Parent.ModuleManeger)
-local Classes = {}
 
-Players.PlayerAdded:Connect(function(plr: Player)
-	local Construct = ModuleManeger.new()
+local Construct = ModuleManeger.new()
 
-	local succ = Construct:Init()
+local succ = Construct:Init()
 
-	if not succ then
-		warn("Failed to Initialize modules kicking player")
-		plr:Kick("Client initilaized disconnect: Reason Module Failed to load")
-		return false
-	end
+if not succ then
+	warn("Failed to Initialize local modules")
+end
 
-	Classes[plr] = Construct
-
-	return true
-end)
-
-Players.PlayerRemoving:Connect(function(plr: Player)
-	local ModuleManeger = Classes[plr]
-
-	if not ModuleManeger then
-		return false
-	end
-
-	ModuleManeger.Remove(ModuleManeger)
-
-	return true
+-- On the client there's only ever one player (yourself), and by the time this
+-- LocalScript runs, Players.PlayerAdded has already fired for you -- so that
+-- connection pattern never actually runs its callback. Cleanup happens on
+-- BindToClose instead, since there's no local equivalent of "PlayerRemoving".
+game:BindToClose(function()
+	Construct:Remove()
 end)
