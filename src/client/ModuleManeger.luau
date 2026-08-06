@@ -52,7 +52,6 @@ type cls = {
 }
 
 function InitModules.Init(self: cls)
-	print("Initilaizing player")
 	if self.Initialized then
 		return true
 	end
@@ -69,7 +68,7 @@ function InitModules.Init(self: cls)
 	self.services = services
 
 	local guis = ModuleLoader.LoadGui(self)
-    
+
 	if type(guis) ~= "table" then
 		print("Failed To initialize gui services")
 		return false
@@ -113,6 +112,7 @@ function InitModules.Remove(self: cls)
 			Connection = nil
 		end
 	end
+    
 	activeclasses[self.Id] = nil
 end
 

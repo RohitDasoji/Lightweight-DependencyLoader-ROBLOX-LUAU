@@ -1,10 +1,10 @@
 local replicatedstorage = game:GetService("ReplicatedStorage")
 local StarterPlayer = game:GetService("StarterPlayer")
 local ModuleLoader = {}
-local Loader = require(replicatedstorage:WaitForChild("Shared"):WaitForChild("ModuleLoader"))
+local Loader = require(replicatedstorage:WaitForChild("Shared"):WaitForChild("DependencyLoader"))
 
 ModuleLoader.LoadGui = function(ContextTable): { [string]: any } | boolean
-	print("Loading Player")
+
 	local folder: Folder = StarterPlayer.StarterPlayerScripts.Client.Gui:WaitForChild("GuiServices")
 	local requiredModules = Loader.Require(folder)
 
@@ -25,7 +25,7 @@ ModuleLoader.LoadGui = function(ContextTable): { [string]: any } | boolean
 		return false
 	end
 
-	print("succ loaded gui")
+
 	return Container
 end
 
@@ -48,7 +48,7 @@ ModuleLoader.LoadPlayer = function(ContextTable): { [string]: any } | boolean
 		warn("Returned value is not = to a table inside playerservices LOCALSCRIPT")
 		return false
 	end
-	print("Succesfull loaded plr")
+
 	return Container
 end
 

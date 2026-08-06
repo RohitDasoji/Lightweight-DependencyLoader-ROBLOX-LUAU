@@ -1,7 +1,7 @@
 local replicatedstorage = game:GetService("ReplicatedStorage")
 local Server = game:GetService("ServerScriptService").Server
 local ModuleLoader = {}
-local Loader = require(replicatedstorage.Shared.ModuleLoader)
+local Loader = require(replicatedstorage.Shared.DependencyLoader)
 
 type Container = { [string]: { [string]: any | any } }
 

@@ -364,10 +364,6 @@ function ModuleLoader.InitializeModules(
 			end
 		end
 
-		if type(Module.Init) == "function" then
-			print("Has init")
-		end
-
 		if type(Module) == "table" and type(Module.Init) == "function" then
 			local initialized = false
 			for i = 1, amountofretries do
