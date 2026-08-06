@@ -1,4 +1,7 @@
 local ModuleManeger = require(script.Parent.ModuleManeger)
+local Players = game:GetService("Players")
+
+local Player = Players.LocalPlayer
 
 local Construct = ModuleManeger.new()
 
@@ -12,6 +15,8 @@ end
 -- LocalScript runs, Players.PlayerAdded has already fired for you -- so that
 -- connection pattern never actually runs its callback. Cleanup happens on
 -- BindToClose instead, since there's no local equivalent of "PlayerRemoving".
-game:BindToClose(function()
-	Construct:Remove()
+Player.AncestryChanged:Connect(function(_, parent)
+	if parent == nil then
+		Construct:Remove()
+	end
 end)
