@@ -30,7 +30,7 @@ ModuleLoader.LoadGui = function(ContextTable): { [string]: any } | boolean
 end
 
 ModuleLoader.LoadPlayer = function(ContextTable): { [string]: any } | boolean
-	local folder: Folder = StarterPlayer.StarterPlayerScripts.Client.Gui:WaitForChild("GuiServices")
+	local folder: Folder = StarterPlayer.StarterPlayerScripts.Client.Player:WaitForChild("PlayerServices")
 	local requiredModules = Loader.Require(folder)
 
 	if not requiredModules then
