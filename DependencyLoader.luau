@@ -1,3 +1,4 @@
+local Rs = game:GetService("RunService")
 
 local ModuleLoader = {}
 
@@ -8,7 +9,26 @@ export type LoaderOptions = {
 	Initialized: { [string]: boolean },
 	Created: { [string]: boolean },
 }
+export type HeartbeatKey = string | Player | number
 
+export type HeartbeatEntry = {
+	Class: any,
+	Key: HeartbeatKey?,
+}
+
+local Connections: { [string]: RBXScriptConnection? } = {
+	Heartbeat = nil,
+	Stepped = nil,
+	RenderStepped = nil,
+	PreRender = nil,
+}
+
+local Containers: { [string]: { HeartbeatEntry } } = {
+	Heartbeat = {},
+	Stepped = {},
+	RenderStepped = {},
+	PreRender = {},
+}
 
 export type dependency = string | ModuleScript
 
@@ -45,7 +65,7 @@ function ModuleLoader.LoadModules(
 
 	for Modulename in pairs(RequiredModules) do
 		local succ, err = pcall(ModuleLoader.SetOrder, LoaderOptions, Modulename, RequiredModules)
-				
+
 		if not succ then
 			warn("Failed to set order: " .. tostring(err))
 			return false
@@ -67,6 +87,54 @@ function ModuleLoader.LoadModules(
 	end
 
 	return true
+end
+
+local function Register(EventName: string, RunServiceEvent: RBXScriptSignal, Services, Key: HeartbeatKey?)
+	local Container = Containers[EventName]
+
+	for _, Class in pairs(Services) do
+		local UpdateFn = Class.Update or Class.update
+		if typeof(UpdateFn) == "function" then
+			table.insert(Container, { Class = Class, Key = Key })
+		end
+	end
+
+	if not Connections[EventName] then
+		Connections[EventName] = RunServiceEvent:Connect(function(...)
+			for _, Entry in ipairs(Container) do
+				local UpdateFn = Entry.Class[EventName] or Entry.Class[EventName:lower()]
+				if typeof(UpdateFn) == "function" then
+					UpdateFn(...)
+				end
+			end
+		end)
+	end
+end
+
+function ModuleLoader.Heartbeat(Services, Key: HeartbeatKey?)
+	Register("Heartbeat", Rs.Heartbeat, Services, Key)
+end
+
+function ModuleLoader.Stepped(Services, Key: HeartbeatKey?)
+	Register("Stepped", Rs.Stepped, Services, Key)
+end
+
+function ModuleLoader.RenderStepped(Services, Key: HeartbeatKey?)
+	Register("RenderStepped", Rs.RenderStepped, Services, Key)
+end
+
+function ModuleLoader.PreRender(Services, Key: HeartbeatKey?)
+	Register("PreRender", Rs.PreRender, Services, Key)
+end
+
+function ModuleLoader.Remove(Key: HeartbeatKey)
+	for _, Container in pairs(Containers) do
+		for i = #Container, 1, -1 do
+			if Container[i].Key == Key then
+				table.remove(Container, i)
+			end
+		end
+	end
 end
 
 function ModuleLoader.RequireServices(Container, FolderOfModules: Folder)
@@ -336,7 +404,6 @@ function ModuleLoader.InitializeModules(
 	return success
 end
 
-
 ModuleLoader.Require = function(folder: Folder)
 	local Container = {}
 	local Require = ModuleLoader.RequireServices(Container, folder)
@@ -349,12 +416,11 @@ ModuleLoader.Require = function(folder: Folder)
 	return Container
 end
 
-ModuleLoader.Load = function(ContextTable: ContextTable, RequiredModules: {[string]: any})
-	
-    local ContainerOfModules: Classmodules = {}
-    local Succ = ModuleLoader.LoadModules(ContextTable, RequiredModules, ContainerOfModules)
+ModuleLoader.Load = function(ContextTable: ContextTable, RequiredModules: { [string]: any })
+	local ContainerOfModules: Classmodules = {}
+	local Succ = ModuleLoader.LoadModules(ContextTable, RequiredModules, ContainerOfModules)
 
-    return ContainerOfModules, Succ
+	return ContainerOfModules, Succ
 end
 
 return ModuleLoader
