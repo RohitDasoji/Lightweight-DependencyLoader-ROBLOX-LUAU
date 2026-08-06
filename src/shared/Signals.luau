@@ -1,9 +1,7 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local goodsignal = require(ReplicatedStorage.Packages.goodsignal)
-
-
 
 local Signals = {}
+
+
 
 export type Connection = {
 	Disconnect: (self: Connection) -> (),
