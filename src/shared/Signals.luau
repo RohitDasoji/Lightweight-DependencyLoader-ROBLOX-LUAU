@@ -20,7 +20,7 @@ export type SignalConstructor = {
 
 local Signals = {}
 
-Signals.signals = {
+Signals.ServerSignals = {
 	NewSignal = goodsignal.new(),
 }
 
