@@ -36,7 +36,7 @@ function RuntimeModule:InitServer()
 
 
 	self.ServerData.RequiredModules = PlayerModules   -- ✅ was missing
-	self.ServerData.Modules = Container 
+	self.ServerData.Modules = Container
 
 	self.ServerData.IsModulesLoaded = true
 	return true

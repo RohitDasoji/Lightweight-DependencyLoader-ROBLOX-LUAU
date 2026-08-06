@@ -6,7 +6,7 @@ local Classes = {}
 Players.PlayerAdded:Connect(function(plr: Player)
     local Construct = ModuleManeger.new()
 
-    local succ = Construct.Init(Construct)
+    local succ = Construct:Init()
 
     if not succ then
         warn("Failed to Initialize modules kicking player")

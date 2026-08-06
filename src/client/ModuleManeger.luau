@@ -30,6 +30,7 @@ end
 
 
 function InitModules.new()
+    print("creatingplayer")
     local self = setmetatable({}, InitModules)
     self.Id = 12238498234
     self.guiServices = {}
@@ -51,6 +52,7 @@ type cls = Objects & {
 }
 
 function InitModules.Init(self: cls)
+    print("Initilaizing player")
     if self.Initialized then
         return true
     end
@@ -59,12 +61,14 @@ function InitModules.Init(self: cls)
     local succ = ModuleLoader.LoadPlayer(self)
     
     if not succ then
+        print("Failed To initilaize local player services")
         return false
     end
 
     local succ2 = ModuleLoader.LoadGui(self)
 
     if not succ2 then
+        print("Failed To intitilaize gui services")
         return false
     end
 

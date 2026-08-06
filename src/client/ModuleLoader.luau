@@ -4,10 +4,12 @@ local ModuleLoader = {}
 local Loader = require(replicatedstorage.Shared.ModuleLoader)
 
 ModuleLoader.LoadGui = function(ContextTable): { [string]: any } | boolean
+	print("Loading Player")
 	local folder: Folder = client.Gui.GuiServices
 	local requiredModules = Loader.Require(folder)
 
 	if not requiredModules then
+		print("Failed to require")
 		return false
 	end
 
@@ -23,6 +25,7 @@ ModuleLoader.LoadGui = function(ContextTable): { [string]: any } | boolean
 		return false
 	end
 
+	print("Succesfully loaded player")
 	return Container
 end
 
@@ -45,7 +48,7 @@ ModuleLoader.LoadPlayer = function(ContextTable): { [string]: any } | boolean
 		warn("Returned value is not = to a table inside playerservices LOCALSCRIPT")
 		return false
 	end
-
+	print("Succesfull loaded gui")
 	return Container
 end
 
